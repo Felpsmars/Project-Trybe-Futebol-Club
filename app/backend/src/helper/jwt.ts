@@ -1,5 +1,6 @@
 import * as jwt from 'jsonwebtoken';
 import * as fs from 'fs';
+import ILogin from '../interfaces/ILogin';
 
 const readJwtSecret = async (): Promise<string> => {
   const jwtSecret: string = await fs.promises.readFile('jwt.evaluation.key', 'utf8');
@@ -15,7 +16,14 @@ const createToken = async (data: jwt.JwtPayload): Promise<string> => {
   return token;
 };
 
+const validateToken = async (token: string): Promise<ILogin> => {
+  const jwtSecret = await readJwtSecret();
+  const validatedToken = jwt.verify(token, jwtSecret);
+  return validatedToken as ILogin;
+};
+
 export {
   readJwtSecret,
   createToken,
+  validateToken,
 };
