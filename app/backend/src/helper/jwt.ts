@@ -22,7 +22,7 @@ const validateToken = async (token: string): Promise<ILogin> => {
   return validatedToken as ILogin;
 };
 
-export {
+export default {
   readJwtSecret,
   createToken,
   validateToken,

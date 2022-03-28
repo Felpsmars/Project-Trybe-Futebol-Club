@@ -1,14 +1,12 @@
 import { Request, Response } from 'express';
-import { createToken, validateToken } from '../helper/jwt';
+import jwt from '../helper/jwt';
 import userService from '../Services/login';
 import IUsers from '../interfaces/IUsers';
 
 const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
-  const token = await createToken({ email });
-  const verifyToken = await validateToken(token);
-  console.log('verifyToken', verifyToken);
+  const token = await jwt.createToken({ email });
 
   try {
     const user: IUsers = await userService.findUser({ email, password });
@@ -21,7 +19,7 @@ const login = async (req: Request, res: Response) => {
 
 const verifyToken = async (req: Request, res: Response) => {
   const token = req.headers.authorization;
-  const { email } = await validateToken(token as string);
+  const { email } = await jwt.validateToken(token as string);
 
   try {
     const role = await userService.validate({ email });
