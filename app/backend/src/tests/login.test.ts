@@ -5,15 +5,14 @@ import chaiHttp = require('chai-http');
 
 import { app } from '../app';
 import Users from '../database/models/Users';
-
 import { Response } from 'superagent';
 
 chai.use(chaiHttp);
-
 const { expect } = chai;
 
 describe('A rota de login', () => {
-  let chaiHttpResponse: Response;
+  let res: Response;
+  let req;
 
   const responseMock = {
     id: 1,
@@ -28,19 +27,25 @@ describe('A rota de login', () => {
       sinon
        .stub(Users, "findOne")
         .resolves(responseMock as Users);
-      sinon.stub(bcryptjs, "compare").resolves(true);
+      sinon.stub(bcryptjs, "compareSync").returns(true);
     });
 
     after(()=>{
       (Users.findOne as sinon.SinonStub).restore();
-      (bcryptjs.compare as sinon.SinonStub).restore();
+      (bcryptjs.compareSync as sinon.SinonStub).restore();
     });
 
-    it('testa se a rota /login responde o id do usuário', async () => {
-      const chaiHttpResponse = await chai.request(app).post('/login');
-      expect(chaiHttpResponse.body.user.id).to.equal(responseMock.id);
+    it('Verifica se o usuário é válido', async () => {
+      req = { email: "admin@admin.com", password: "secret_admin" };
+      res = await chai.request(app).post('/login').send(req);
+
+      const { user, token } = res.body;
+
+      expect(user.id).to.be.equal(1);
     });
+   
   });
+
   describe('testa se passar algum valor inválido', () => {
     before(async () => {
       sinon
@@ -58,18 +63,18 @@ describe('A rota de login', () => {
       const payload = {
         password: '1234567'
       }
-      const chaiHttpResponse = await chai.request(app).post('/login').send(payload);
-      expect(chaiHttpResponse.status).to.be.equal(401);
-      expect(chaiHttpResponse.body.message).to.be.equal("\"email\" is required");
+      const res = await chai.request(app).post('/login').send(payload);
+      expect(res.status).to.be.equal(401);
+      expect(res.body.message).to.be.equal("All fields must be filled");
     });
 
     it('testa se retorna erro caso a senha seja inválida', async () => {
       const payload = {
         email: 'admin@admin.com',
       }
-      const chaiHttpResponse = await chai.request(app).post('/login').send(payload);
-      expect(chaiHttpResponse.status).to.be.equal(401);
-      expect(chaiHttpResponse.body.message).to.be.equal("\"password\" is required");
+      const res = await chai.request(app).post('/login').send(payload);
+      expect(res.status).to.be.equal(401);
+      expect(res.body.message).to.be.equal("All fields must be filled");
     })
   });
 });
