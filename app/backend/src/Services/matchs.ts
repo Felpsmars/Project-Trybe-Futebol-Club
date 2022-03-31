@@ -5,7 +5,7 @@ import Clubs from '../database/models/Clubs';
 import Matchs from '../database/models/Matchs';
 import Users from '../database/models/Users';
 
-export const findAll = async () => {
+const findAll = async () => {
   const all = await Matchs.findAll({
     include: [
       { model: Clubs, as: 'awayClub', attributes: { exclude: ['id'] } },
@@ -17,7 +17,7 @@ export const findAll = async () => {
   return { data: all };
 };
 
-export const findByInProgress = async (inProgress: boolean) => {
+const findByInProgress = async (inProgress: boolean) => {
   const allInProgress = await Matchs.findAll({
     where: { inProgress },
     include: [
@@ -30,7 +30,7 @@ export const findByInProgress = async (inProgress: boolean) => {
   return { data: allInProgress };
 };
 
-export const findAndCreateInProgressMatch = async (dataMatch: IMatch) => {
+const findAndCreateInProgressMatch = async (dataMatch: IMatch) => {
   const awayClubIsValid = await Matchs.findOne({ where: { awayTeam: dataMatch.awayTeam } });
   const awayHomeIsValid = await Matchs.findOne({ where: { homeTeam: dataMatch.homeTeam } });
 
@@ -41,7 +41,7 @@ export const findAndCreateInProgressMatch = async (dataMatch: IMatch) => {
   return { data: created };
 };
 
-export const updateGoals = async (id: number, homeTeam: number, awayTeam: number) => {
+const updateGoals = async (id: number, homeTeam: number, awayTeam: number) => {
   const updatedGoals = await Matchs.update(
     {
       awayTeamGoals: awayTeam,
@@ -53,27 +53,36 @@ export const updateGoals = async (id: number, homeTeam: number, awayTeam: number
   return updatedGoals;
 };
 
-const verifyTokenToValidate = async (decoded: string | jwt.JwtPayload) => {
-  if (typeof decoded === 'string') return '';
-  const user = Users.findOne({ where: { email: decoded.email } });
+const findAndValidateEmail = async (verified: string | jwt.JwtPayload) => {
+  if (typeof verified === 'string') return '';
+  const user = Users.findOne({ where: { email: verified.email } });
 
   if (!user) throw new Error('Incorrect email or password');
 
   return user;
 };
 
-export const getMatchToValidate = async (token: string) => {
+const validateAndFindEmailByToken = async (token: string) => {
   // depois de muito sofrimente descobri que meu Helper jwt da problema quando utilizo
   // por retornar uma promise<string> e não uma string, então o teste roda infinito e crasha
   // nota para eu voltar e refatorar
   const jwtSecret = fs.readFileSync('jwt.evaluation.key', 'utf8');
-  const decodedToken = jwt.verify(token, jwtSecret);
-  const verified = await verifyTokenToValidate(decodedToken);
+  const verifiedToken = jwt.verify(token, jwtSecret);
+  const verified = await findAndValidateEmail(verifiedToken);
   return { auth: verified };
 };
 
-export const updateStatusInProgress = async (id: number) => {
+const updateStatusInProgress = async (id: number) => {
   const updatedStatus = await Matchs.update({ inProgress: false }, { where: { id } });
 
   return updatedStatus;
+};
+
+export default {
+  findAll,
+  findByInProgress,
+  findAndCreateInProgressMatch,
+  updateGoals,
+  validateAndFindEmailByToken,
+  updateStatusInProgress,
 };

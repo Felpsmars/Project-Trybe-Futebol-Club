@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import * as MatchsService from '../Services/matchs';
+import MatchsService from '../Services/matchs';
 
 export const findAndGetAllMatchs = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -32,7 +32,7 @@ export const findByInProgressMatches = async (req: Request, res: Response) => {
 export const validateAndCreateMatchInProgress = async (req: Request, res: Response) => {
   try {
     const authorization = req.headers.authorization || '';
-    const { auth } = await MatchsService.getMatchToValidate(authorization);
+    const { auth } = await MatchsService.validateAndFindEmailByToken(authorization);
     if (!auth) {
       return res.status(401).json({ message: 'Incorrect email or password' });
     }
@@ -46,24 +46,25 @@ export const validateAndCreateMatchInProgress = async (req: Request, res: Respon
 
 export const updateMatchByInProgress = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const idNum = Number(id);
-  try {
-    await MatchsService.updateStatusInProgress(idNum);
-    return res.status(200).json({ message: 'The match was updated' });
-  } catch (err) {
-    console.log('entrou no catch');
-  }
+
+  await MatchsService.updateStatusInProgress(+id);
+
+  return res.status(200).json({ message: 'The match was updated' });
 };
 
 export const updateMatchByGoals = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { homeTeamGoals, awayTeamGoals } = req.body;
 
-  try {
-    await MatchsService.updateGoals(+id, +homeTeamGoals, +awayTeamGoals);
+  await MatchsService.updateGoals(+id, +homeTeamGoals, +awayTeamGoals);
 
-    return res.status(200).json({ message: 'The match was updated' });
-  } catch (err) {
-    console.log('entrou no catch');
-  }
+  return res.status(200).json({ message: 'The match was updated' });
+};
+
+export default {
+  findAndGetAllMatchs,
+  findByInProgressMatches,
+  validateAndCreateMatchInProgress,
+  updateMatchByInProgress,
+  updateMatchByGoals,
 };
