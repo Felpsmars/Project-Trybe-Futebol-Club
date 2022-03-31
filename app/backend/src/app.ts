@@ -4,6 +4,7 @@ import loginRoute from './Routes/login.routes';
 import clubsRoute from './Routes/club.routes';
 import * as matchs from './Controller/matchs';
 import validationMatch from './middlewares/match';
+import * as leaderboard from './Controller/leaderBoard';
 
 class App {
   public app: express.Express;
@@ -37,6 +38,8 @@ class App {
       .post(validationMatch, matchs.validateAndCreateMatchInProgress);
     this.app.route('/matchs/:id/finish').patch(matchs.updateMatchByInProgress);
     this.app.route('/matchs/:id').patch(matchs.updateMatchByGoals);
+
+    this.app.route('/leaderboard/home').get(leaderboard.pointsHT);
   }
 
   public start(PORT: string | number):void {
