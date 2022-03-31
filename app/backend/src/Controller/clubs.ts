@@ -10,7 +10,7 @@ const getAll = async (_req: Request, res: Response) => {
 
 const getById = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const foundedClub = await clubsService.findClub(+id);
+  const foundedClub = await clubsService.findClub(id);
 
   if (foundedClub) return res.status(200).json(foundedClub);
 
