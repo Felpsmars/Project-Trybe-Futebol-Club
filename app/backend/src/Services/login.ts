@@ -6,6 +6,12 @@ import Users from '../database/models/Users';
 const incorrectLoginMessage = 'Incorrect email or password';
 const incorrectField = 'All fields must be filled';
 
+const getEmail = async (email : string) => {
+  const findedUser = await Users.findOne({ where: { email } });
+
+  return findedUser;
+};
+
 const findUser = async ({ email, password } : ILogin): Promise<IUser> => {
   const findedUser = await Users.findOne({ where: { email } });
 
@@ -37,4 +43,5 @@ const validate = async ({ email } : ILogin) => {
 export default {
   findUser,
   validate,
+  getEmail,
 };

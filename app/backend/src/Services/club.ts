@@ -7,7 +7,7 @@ const getAllClub = async () => {
   return findedAll;
 };
 
-const findClub = async (id: number) => {
+const findClub = async (id: string) => {
   const club: IClub | null = await Clubs.findOne({ where: { id } });
 
   return club;
